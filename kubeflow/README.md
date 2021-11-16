@@ -1,5 +1,5 @@
 # Set up
-### Step 1: Create a cluster (make sure you delete the cluster when done)
+### Step 1: Create a Kubeflow pipeline (make sure you delete the cluster when done)
 1. Go to https://console.cloud.google.com/marketplace/kubernetes/config/google-cloud-ai-platform/kubeflow-pipelines?version=1.7&project=alzheimers-331518&authuser=1
 2. Create the cluster and deploy. Set zone to "us-west1-b" and name the pipeline "kubeflow-pipelines-alzheimers"
     ![s](images/kubeflow_cluster_setup.png)
@@ -18,4 +18,7 @@ token = "<your-github-access-token>"
 !git clone https://{username}:{token}@github.com/Team-Equality-DL-Project/cmpe297.git /home/jupyter/cmpe297
 ```
 ### Step 4:
+Set the endpoint in main.ipynb.
+    ![s](images/kubeflow_pipeline_endpoint.png)
+### Step 5:
 To deploy the latest pipeline, run `cmpe297/kubeflow/main.ipynb`
