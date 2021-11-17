@@ -78,7 +78,7 @@ SERVING_MODEL_DIR = os.path.join(PIPELINE_ROOT, 'serving_model')
 # dependency currently, so this means CsvExampleGen cannot be used with Dataflow
 # (step 8 in the template notebook).
 
-DATA_PATH = 'gs://{}/tfx-template/data/alzheimers/Alzheimer_s Dataset/'.format(configs.GCS_BUCKET_NAME)
+DATA_PATH = 'gs://{}/tfx-template/data/alzheimers/'.format(configs.GCS_BUCKET_NAME)
 
 def run():
   """Define a kubeflow pipeline."""
@@ -97,7 +97,34 @@ def run():
   # pipeline DSL file, instead of using environment vars.
   tfx_image = os.environ.get('KUBEFLOW_TFX_IMAGE', None)
 
+  def request_more_memory():
+    def _set_memory_spec(container_op):
+      container_op.set_memory_request('5G')
+    return _set_memory_spec
+
+  def request_memory_limit():
+    def _set_memory_spec(container_op):
+      container_op.set_memory_limit('32G')
+    return _set_memory_spec
+
+  def request_cpu():
+    def _set_memory_spec(container_op):
+      container_op.set_cpu_request('100m')
+    return _set_memory_spec
+
+  def request_cpu_limit():
+    def _set_memory_spec(container_op):
+      container_op.set_cpu_limit('2000m')
+    return _set_memory_spec
+
+  pipeline_op_funcs = kubeflow_dag_runner.get_default_pipeline_operator_funcs()
+  pipeline_op_funcs.append(request_more_memory())
+  pipeline_op_funcs.append(request_memory_limit())
+  pipeline_op_funcs.append(request_cpu())
+  pipeline_op_funcs.append(request_cpu_limit())
+
   runner_config = kubeflow_dag_runner.KubeflowDagRunnerConfig(
+      pipeline_operator_funcs=pipeline_op_funcs,
       kubeflow_metadata_config=metadata_config, tfx_image=tfx_image)
   pod_labels = kubeflow_dag_runner.get_default_pod_labels()
   pod_labels.update({telemetry_utils.LABEL_KFP_SDK_ENV: 'tfx-template'})
@@ -108,8 +135,8 @@ def run():
           pipeline_name=configs.PIPELINE_NAME,
           pipeline_root=PIPELINE_ROOT,
           data_path=DATA_PATH,
-          preprocessing_fn=configs.PREPROCESSING_FN,
-          run_fn=configs.RUN_FN,
+          preprocessing_module_file=configs.PREPROCESSING_MODULE_FILE,
+          run_module_file=configs.RUN_MODULE_FILE,
           train_args=trainer_pb2.TrainArgs(num_steps=configs.TRAIN_NUM_STEPS),
           eval_args=trainer_pb2.EvalArgs(num_steps=configs.EVAL_NUM_STEPS),
           eval_accuracy_threshold=configs.EVAL_ACCURACY_THRESHOLD,

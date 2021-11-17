@@ -47,8 +47,8 @@ GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT + '-kubeflowpipelines-default'
 #                      BigQuery, Dataflow and Cloud AI Platform.
 # GOOGLE_CLOUD_REGION = ''  # ex) 'us-central1'
 
-PREPROCESSING_FN = 'models.preprocessing.preprocessing_fn'
-RUN_FN = 'models.keras.model.run_fn'
+PREPROCESSING_MODULE_FILE = '/home/jupyter/cmpe297/kubeflow/pipeline/utils_native_keras.py'
+RUN_MODULE_FILE = '/home/jupyter/cmpe297/kubeflow/pipeline/utils_native_keras.py'
 # NOTE: Uncomment below to use an estimator based model.
 # RUN_FN = 'models.estimator.model.run_fn'
 

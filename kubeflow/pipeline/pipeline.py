@@ -21,33 +21,49 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 from typing import Any, Dict, List, Optional, Text
+
+import tensorflow as tf
+import tfx
 
 import tensorflow_model_analysis as tfma
 import copy
-from tfx.components import CsvExampleGen
+from tfx.components import ImportExampleGen
 from tfx.components import Evaluator
 from tfx.components import ExampleValidator
 from tfx.components import Pusher
-from tfx.components import ResolverNode
+# from tfx.components import ResolverNode
 from tfx.components import SchemaGen
 from tfx.components import StatisticsGen
 from tfx.components import Trainer
 from tfx.components import Transform
-from tfx.components.trainer import executor as trainer_executor
+# from tfx.components.trainer import executor as trainer_executor
 from tfx.dsl.components.base import executor_spec
-from tfx.dsl.experimental import latest_blessed_model_resolver
-from tfx.extensions.google_cloud_ai_platform.pusher import executor as ai_platform_pusher_executor
-from tfx.extensions.google_cloud_ai_platform.trainer import executor as ai_platform_trainer_executor
-from tfx.extensions.google_cloud_big_query.example_gen import component as big_query_example_gen_component  # pylint: disable=unused-import
+# from tfx.dsl.experimental import latest_blessed_model_resolver
+# from tfx.extensions.google_cloud_ai_platform.pusher import executor as ai_platform_pusher_executor
+# from tfx.extensions.google_cloud_ai_platform.trainer import executor as ai_platform_trainer_executor
+# from tfx.extensions.google_cloud_big_query.example_gen import component as big_query_example_gen_component  # pylint: disable=unused-import
 from tfx.orchestration import pipeline
 from tfx.proto import pusher_pb2
 from tfx.proto import trainer_pb2
 from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
-from tfx.utils.dsl_utils import external_input
-from tfx.components import ImportExampleGen
+# from tfx.utils.dsl_utils import external_input
+from tfx.components.trainer.executor import GenericExecutor
+from tfx.orchestration import metadata
+from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
+from tfx.proto import evaluator_pb2
+from tfx.proto import example_gen_pb2
+
+import pprint
+import urllib
+import absl
+tf.get_logger().propagate = False
+pp = pprint.PrettyPrinter()
+
+from tfx.orchestration.experimental.interactive.interactive_context import InteractiveContext
 
 from ml_metadata.proto import metadata_store_pb2
 
@@ -85,8 +101,8 @@ def create_pipeline(
     data_path: Text,
     # TODO(step 7): (Optional) Uncomment here to use BigQuery as a data source.
     # query: Text,
-    preprocessing_fn: Text,
-    run_fn: Text,
+    preprocessing_module_file: Text,
+    run_module_file: Text,
     train_args: trainer_pb2.TrainArgs,
     eval_args: trainer_pb2.EvalArgs,
     eval_accuracy_threshold: float,
@@ -102,9 +118,7 @@ def create_pipeline(
   components = []
 
   # Brings data into the pipeline or otherwise joins/converts training data.
-#   example_gen = CsvExampleGen(input=external_input(data_path))
-  examples = external_input(data_path)
-  example_gen = ImportExampleGen(input=examples)
+  example_gen = ImportExampleGen(input_base=data_path)
   # TODO(step 7): (Optional) Uncomment here to use BigQuery as a data source.
   # example_gen = big_query_example_gen_component.BigQueryExampleGen(
   #     query=query)
@@ -133,9 +147,11 @@ def create_pipeline(
   transform = Transform(
       examples=example_gen.outputs['examples'],
       schema=schema_gen.outputs['schema'],
-      preprocessing_fn=preprocessing_fn)
+      module_file=preprocessing_module_file)
   # TODO(step 6): Uncomment here to add Transform to the pipeline.
   components.append(transform)
+
+  """
   ai_platform_training_args = copy.copy(ai_platform_training_args)
   # Uses user-provided Python function that implements a model using TF-Learn.
   trainer_args = {
@@ -171,6 +187,8 @@ def create_pipeline(
       model_blessing=Channel(type=ModelBlessing))
   # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
   components.append(model_resolver)
+  
+  
 
 ######### Original, DO NOT USE THIS
   # Uses TFMA to compute a evaluation statistics over features of a model and
@@ -260,6 +278,8 @@ def create_pipeline(
   pusher = Pusher(**pusher_args)  # pylint: disable=unused-variable
   # TODO(step 6): Uncomment here to add Pusher to the pipeline.
   components.append(pusher)
+
+  """
 
   return pipeline.Pipeline(
       pipeline_name=pipeline_name,

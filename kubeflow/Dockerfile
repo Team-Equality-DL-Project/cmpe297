@@ -11,4 +11,5 @@ RUN pip install apache-beam
 RUN pip install pyarrow
 RUN pip install tfx-bsl
 RUN pip install oauth2client==3.0.0
+RUN pip install tflite-support
 ENV PYTHONPATH="/pipeline:${PYTHONPATH}"
