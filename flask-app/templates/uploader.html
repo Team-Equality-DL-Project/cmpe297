@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+    <center>
+        <div class="box">
+            {% if value is defined %}
+            <br>
+        <center><p><b>{{value}}</b></p></center>
+        {% else %}
+            <center><p><b>Upload a file on the home page</b></p></center>
+        {% endif %}
+        </div>
+    </center>
+    
+    
+{% endblock %}

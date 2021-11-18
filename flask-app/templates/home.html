@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+<html>
+  <body>
+    <center>
+      <div class="box">
+        <form action = "/uploader" method = "POST" 
+          enctype = "multipart/form-data">
+          <input type = "file" name = "file" class="upl-btn"/>
+          <br>
+          <input type = "submit" class="submit-btn"/>
+        </form>  
+        
+      </div>
+    </center>  
+  </body>
+</html>
+{% endblock %}
