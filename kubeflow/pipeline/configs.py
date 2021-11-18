@@ -45,17 +45,13 @@ GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT + '-kubeflowpipelines-default'
 
 # TODO(step 8,step 9): (Optional) Set your region to use GCP services including
 #                      BigQuery, Dataflow and Cloud AI Platform.
-# GOOGLE_CLOUD_REGION = ''  # ex) 'us-central1'
+GOOGLE_CLOUD_REGION = 'us-west1'  # ex) 'us-central1'
 
 PREPROCESSING_MODULE_FILE = '/home/jupyter/cmpe297/kubeflow/pipeline/utils_native_keras.py'
 RUN_MODULE_FILE = '/home/jupyter/cmpe297/kubeflow/pipeline/utils_native_keras.py'
 # NOTE: Uncomment below to use an estimator based model.
-# RUN_FN = 'models.estimator.model.run_fn'
 
-# TRAIN_NUM_STEPS = 1000
-# EVAL_NUM_STEPS = 150
-
-TRAIN_NUM_STEPS = 12
+TRAIN_NUM_STEPS = 150
 EVAL_NUM_STEPS = 1
 
 # Change this value according to your use cases.
@@ -129,32 +125,32 @@ _query_sample_rate = 0.0001  # Generate a 0.01% random sample.
 # Platform, refer to
 # https://cloud.google.com/ml-engine/reference/rest/v1/projects.jobs#Job
 # TODO(step 9): (Optional) Uncomment below to use AI Platform training.
-# GCP_AI_PLATFORM_TRAINING_ARGS = {
-#     'project': GOOGLE_CLOUD_PROJECT,
-#     'region': GOOGLE_CLOUD_REGION,
-#     # Starting from TFX 0.14, training on AI Platform uses custom containers:
-#     # https://cloud.google.com/ml-engine/docs/containers-overview
-#     # You can specify a custom container here. If not specified, TFX will use
-#     # a public container image matching the installed version of TFX.
-#     # TODO(step 9): (Optional) Set your container name below.
-#     'masterConfig': {
-#       'imageUri': 'gcr.io/' + GOOGLE_CLOUD_PROJECT + '/tfx-pipeline'
-#     },
-#     # Note that if you do specify a custom container, ensure the entrypoint
-#     # calls into TFX's run_executor script (tfx/scripts/run_executor.py)
-# }
+GCP_AI_PLATFORM_TRAINING_ARGS = {
+    'project': GOOGLE_CLOUD_PROJECT,
+    'region': GOOGLE_CLOUD_REGION,
+    # Starting from TFX 0.14, training on AI Platform uses custom containers:
+    # https://cloud.google.com/ml-engine/docs/containers-overview
+    # You can specify a custom container here. If not specified, TFX will use
+    # a public container image matching the installed version of TFX.
+    # TODO(step 9): (Optional) Set your container name below.
+    # 'masterConfig': {
+    #   'imageUri': 'gcr.io/' + GOOGLE_CLOUD_PROJECT + '/tfx-pipeline'
+    # },
+    # Note that if you do specify a custom container, ensure the entrypoint
+    # calls into TFX's run_executor script (tfx/scripts/run_executor.py)
+}
 
 # A dict which contains the serving job parameters to be passed to Google
 # Cloud AI Platform. For the full set of parameters supported by Google Cloud AI
 # Platform, refer to
 # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models
 # TODO(step 9): (Optional) Uncomment below to use AI Platform serving.
-# GCP_AI_PLATFORM_SERVING_ARGS = {
-#     'model_name': PIPELINE_NAME.replace('-','_'),  # '-' is not allowed.
-#     'project_id': GOOGLE_CLOUD_PROJECT,
-#     # The region to use when serving the model. See available regions here:
-#     # https://cloud.google.com/ml-engine/docs/regions
-#     # Note that serving currently only supports a single region:
-#     # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models#Model  # pylint: disable=line-too-long
-#     'regions': [GOOGLE_CLOUD_REGION],
-# }
+GCP_AI_PLATFORM_SERVING_ARGS = {
+    'model_name': PIPELINE_NAME.replace('-','_'),  # '-' is not allowed.
+    'project_id': GOOGLE_CLOUD_PROJECT,
+    # The region to use when serving the model. See available regions here:
+    # https://cloud.google.com/ml-engine/docs/regions
+    # Note that serving currently only supports a single region:
+    # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models#Model  # pylint: disable=line-too-long
+    'regions': [GOOGLE_CLOUD_REGION],
+}

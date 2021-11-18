@@ -25,7 +25,7 @@ import os
 from typing import Any, Dict, List, Optional, Text
 
 import tensorflow as tf
-import tfx
+from tfx import v1 as tfx
 
 import tensorflow_model_analysis as tfma
 import copy
@@ -38,19 +38,18 @@ from tfx.components import SchemaGen
 from tfx.components import StatisticsGen
 from tfx.components import Trainer
 from tfx.components import Transform
-# from tfx.components.trainer import executor as trainer_executor
-from tfx.dsl.components.base import executor_spec
+from tfx.components.trainer import executor as trainer_executor
+# from tfx.dsl.components.base import executor_spec
+from tfx.components.base import executor_spec
 # from tfx.dsl.experimental import latest_blessed_model_resolver
-# from tfx.extensions.google_cloud_ai_platform.pusher import executor as ai_platform_pusher_executor
-# from tfx.extensions.google_cloud_ai_platform.trainer import executor as ai_platform_trainer_executor
-# from tfx.extensions.google_cloud_big_query.example_gen import component as big_query_example_gen_component  # pylint: disable=unused-import
+from tfx.extensions.google_cloud_ai_platform.pusher import executor as ai_platform_pusher_executor
+from tfx.extensions.google_cloud_ai_platform.trainer import executor as ai_platform_trainer_executor
 from tfx.orchestration import pipeline
 from tfx.proto import pusher_pb2
 from tfx.proto import trainer_pb2
 from tfx.types import Channel
 from tfx.types.standard_artifacts import Model
 from tfx.types.standard_artifacts import ModelBlessing
-# from tfx.utils.dsl_utils import external_input
 from tfx.components.trainer.executor import GenericExecutor
 from tfx.orchestration import metadata
 from tfx.orchestration.beam.beam_dag_runner import BeamDagRunner
@@ -148,21 +147,19 @@ def create_pipeline(
       examples=example_gen.outputs['examples'],
       schema=schema_gen.outputs['schema'],
       module_file=preprocessing_module_file)
-  # TODO(step 6): Uncomment here to add Transform to the pipeline.
   components.append(transform)
 
-  """
   ai_platform_training_args = copy.copy(ai_platform_training_args)
   # Uses user-provided Python function that implements a model using TF-Learn.
+    
   trainer_args = {
-      'run_fn': run_fn,
-      'transformed_examples': transform.outputs['transformed_examples'],
+      # 'module_file': run_module_file,
+      'examples': transform.outputs['transformed_examples'],
       'schema': schema_gen.outputs['schema'],
       'transform_graph': transform.outputs['transform_graph'],
       'train_args': train_args,
       'eval_args': eval_args,
-      'custom_executor_spec':
-          executor_spec.ExecutorClassSpec(trainer_executor.GenericExecutor),
+      'custom_executor_spec': executor_spec.ExecutorClassSpec(trainer_executor.GenericExecutor),
   }
   if ai_platform_training_args is not None:
     trainer_args.update({
@@ -171,92 +168,57 @@ def create_pipeline(
                 ai_platform_trainer_executor.GenericExecutor
             ),
         'custom_config': {
-            ai_platform_trainer_executor.TRAINING_ARGS_KEY:
-                ai_platform_training_args,
+            ai_platform_trainer_executor.TRAINING_ARGS_KEY: ai_platform_training_args,
         }
     })
-  trainer = Trainer(**trainer_args)
-  # TODO(step 6): Uncomment here to add Trainer to the pipeline.
+
+  trainer = Trainer(**trainer_args, module_file=run_module_file)
   components.append(trainer)
 
   # Get the latest blessed model for model validation.
-  model_resolver = ResolverNode(
-      instance_name='latest_blessed_model_resolver',
-      resolver_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
-      model=Channel(type=Model),
-      model_blessing=Channel(type=ModelBlessing))
-  # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
+  # model_resolver = ResolverNode(
+  #     instance_name='latest_blessed_model_resolver',
+  #     resolver_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
+  #     model=Channel(type=Model),
+  #     model_blessing=Channel(type=ModelBlessing))
+  # # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
+  # components.append(model_resolver)
+    
+  model_resolver = tfx.dsl.Resolver(
+      strategy_class=tfx.dsl.experimental.LatestBlessedModelStrategy,
+      model=tfx.dsl.Channel(type=tfx.types.standard_artifacts.Model),
+      model_blessing=tfx.dsl.Channel(
+          type=tfx.types.standard_artifacts.ModelBlessing)).with_id(
+              'latest_blessed_model_resolver')
   components.append(model_resolver)
-  
-  
+    
+  # Uses TFMA to compute evaluation statistics over features of a model and
+  # perform quality validation of a candidate model (compare to a baseline).
+  eval_config = tfma.EvalConfig(
+    model_specs=[tfma.ModelSpec(label_key='label_xf', model_type='tf_lite')], #tf_lite
+    slicing_specs=[tfma.SlicingSpec()],
+    metrics_specs=[
+        tfma.MetricsSpec(metrics=[
+            tfma.MetricConfig(
+                class_name='SparseCategoricalAccuracy',
+                threshold=tfma.MetricThreshold(
+                    value_threshold=tfma.GenericValueThreshold(
+                        lower_bound={'value': 0.3}), # TODO: Change threshold if need be, right now it is very low.
+                    # Change threshold will be ignored if there is no
+                    # baseline model resolved from MLMD (first run).
+                    change_threshold=tfma.GenericChangeThreshold(
+                        direction=tfma.MetricDirection.HIGHER_IS_BETTER,
+                        absolute={'value': -1e-3})))
+        ])
+    ])
 
-######### Original, DO NOT USE THIS
-  # Uses TFMA to compute a evaluation statistics over features of a model and
-  # perform quality validation of a candidate model (compared to a baseline).
-#   eval_config = tfma.EvalConfig(
-#       model_specs=[tfma.ModelSpec(label_key='big_tipper')],
-#       slicing_specs=[tfma.SlicingSpec()],
-#       metrics_specs=[
-#           tfma.MetricsSpec(metrics=[
-#               tfma.MetricConfig(
-#                   class_name='BinaryAccuracy',
-#                   threshold=tfma.MetricThreshold(
-#                       value_threshold=tfma.GenericValueThreshold(
-#                           lower_bound={'value': eval_accuracy_threshold}),
-#                       change_threshold=tfma.GenericChangeThreshold(
-#                           direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-#                           absolute={'value': -1e-10})))
-#           ])
-#       ])
-#########
-#   eval_config = tfma.EvalConfig(
-#     model_specs=[tfma.ModelSpec(label_key='label_xf', model_type='tf_lite')], #tf_lite
-#     slicing_specs=[tfma.SlicingSpec()],
-#     metrics_specs=[
-#         tfma.MetricsSpec(metrics=[
-#             tfma.MetricConfig(
-#                 class_name='SparseCategoricalAccuracy',
-#                 threshold=tfma.MetricThreshold(
-#                     value_threshold=tfma.GenericValueThreshold(
-#                         lower_bound={'value': 0.55}),
-#                     # Change threshold will be ignored if there is no
-#                     # baseline model resolved from MLMD (first run).
-#                     change_threshold=tfma.GenericChangeThreshold(
-#                         direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-#                         absolute={'value': -1e-3})))
-#         ])
-#     ])
-########
-#   Original DO NOT USE THIS 
-#   evaluator = Evaluator(
-#       examples=example_gen.outputs['examples'],
-#       model=trainer.outputs['model'],
-#       baseline_model=model_resolver.outputs['model'],
-#       # Change threshold will be ignored if there is no baseline (first run).
-#       eval_config=eval_config)
-#########
-#   evaluator = Evaluator(
-#     examples=transform.outputs['transformed_examples'],
-#     model=trainer.outputs['model'],
-#     baseline_model=model_resolver.outputs['model'],
-#     eval_config=eval_config)
-
-#   # TODO(step 6): Uncomment here to add Evaluator to the pipeline.
-#   components.append(evaluator)
-
-  # Checks whether the model passed the validation steps and pushes the model
-  # to a file destination if check passed.
-#   pusher_args = {
-#       'model':
-#           trainer.outputs['model'],
-#       'model_blessing':
-#           evaluator.outputs['blessing'],
-#       'push_destination':
-#           pusher_pb2.PushDestination(
-#               filesystem=pusher_pb2.PushDestination.Filesystem(
-#                   base_directory=serving_model_dir)),
-#   }
-
+  evaluator = tfx.components.Evaluator(
+    examples=transform.outputs['transformed_examples'],
+    model=trainer.outputs['model'],
+    baseline_model=model_resolver.outputs['model'],
+    eval_config=eval_config)
+  components.append(evaluator)
+    
   pusher_args = {
       'model':
           trainer.outputs['model'],
@@ -268,18 +230,13 @@ def create_pipeline(
   if ai_platform_serving_args is not None:
     pusher_args.update({
         'custom_executor_spec':
-            executor_spec.ExecutorClassSpec(ai_platform_pusher_executor.Executor
-                                           ),
-        'custom_config': {
-            ai_platform_pusher_executor.SERVING_ARGS_KEY:
-                ai_platform_serving_args
-        },
+            executor_spec.ExecutorClassSpec(ai_platform_pusher_executor.Executor),
+        # 'custom_config': {
+        #     ai_platform_pusher_executor.SERVING_ARGS_KEY: ai_platform_serving_args
+        # },
     })
-  pusher = Pusher(**pusher_args)  # pylint: disable=unused-variable
-  # TODO(step 6): Uncomment here to add Pusher to the pipeline.
+  pusher = Pusher(**pusher_args)
   components.append(pusher)
-
-  """
 
   return pipeline.Pipeline(
       pipeline_name=pipeline_name,
