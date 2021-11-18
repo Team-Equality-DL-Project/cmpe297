@@ -55,7 +55,7 @@ TRAIN_NUM_STEPS = 150
 EVAL_NUM_STEPS = 1
 
 # Change this value according to your use cases.
-EVAL_ACCURACY_THRESHOLD = 0.6
+# EVAL_ACCURACY_THRESHOLD = 0.6
 
 # Beam args to use BigQueryExampleGen with Beam DirectRunner.
 # TODO(step 7): (Optional) Uncomment here to provide GCP related configs for
@@ -152,5 +152,5 @@ GCP_AI_PLATFORM_SERVING_ARGS = {
     # https://cloud.google.com/ml-engine/docs/regions
     # Note that serving currently only supports a single region:
     # https://cloud.google.com/ml-engine/reference/rest/v1/projects.models#Model  # pylint: disable=line-too-long
-    'regions': [GOOGLE_CLOUD_REGION],
+    # 'regions': [GOOGLE_CLOUD_REGION],
 }

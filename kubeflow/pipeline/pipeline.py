@@ -33,15 +33,12 @@ from tfx.components import ImportExampleGen
 from tfx.components import Evaluator
 from tfx.components import ExampleValidator
 from tfx.components import Pusher
-# from tfx.components import ResolverNode
 from tfx.components import SchemaGen
 from tfx.components import StatisticsGen
 from tfx.components import Trainer
 from tfx.components import Transform
 from tfx.components.trainer import executor as trainer_executor
-# from tfx.dsl.components.base import executor_spec
 from tfx.components.base import executor_spec
-# from tfx.dsl.experimental import latest_blessed_model_resolver
 from tfx.extensions.google_cloud_ai_platform.pusher import executor as ai_platform_pusher_executor
 from tfx.extensions.google_cloud_ai_platform.trainer import executor as ai_platform_trainer_executor
 from tfx.orchestration import pipeline
@@ -153,7 +150,6 @@ def create_pipeline(
   # Uses user-provided Python function that implements a model using TF-Learn.
     
   trainer_args = {
-      # 'module_file': run_module_file,
       'examples': transform.outputs['transformed_examples'],
       'schema': schema_gen.outputs['schema'],
       'transform_graph': transform.outputs['transform_graph'],
@@ -175,15 +171,7 @@ def create_pipeline(
   trainer = Trainer(**trainer_args, module_file=run_module_file)
   components.append(trainer)
 
-  # Get the latest blessed model for model validation.
-  # model_resolver = ResolverNode(
-  #     instance_name='latest_blessed_model_resolver',
-  #     resolver_class=latest_blessed_model_resolver.LatestBlessedModelResolver,
-  #     model=Channel(type=Model),
-  #     model_blessing=Channel(type=ModelBlessing))
-  # # TODO(step 6): Uncomment here to add ResolverNode to the pipeline.
-  # components.append(model_resolver)
-    
+  # Get the latest blessed model for model validation.  
   model_resolver = tfx.dsl.Resolver(
       strategy_class=tfx.dsl.experimental.LatestBlessedModelStrategy,
       model=tfx.dsl.Channel(type=tfx.types.standard_artifacts.Model),
@@ -203,12 +191,13 @@ def create_pipeline(
                 class_name='SparseCategoricalAccuracy',
                 threshold=tfma.MetricThreshold(
                     value_threshold=tfma.GenericValueThreshold(
-                        lower_bound={'value': 0.3}), # TODO: Change threshold if need be, right now it is very low.
+                        lower_bound={'value': 0.0}), # TODO: Change threshold if need be, right now it is very low.
                     # Change threshold will be ignored if there is no
                     # baseline model resolved from MLMD (first run).
-                    change_threshold=tfma.GenericChangeThreshold(
-                        direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-                        absolute={'value': -1e-3})))
+                    # change_threshold=tfma.GenericChangeThreshold(
+                    #     direction=tfma.MetricDirection.HIGHER_IS_BETTER,
+                    #     absolute={'value': -1e-3})
+                ))
         ])
     ])
 
@@ -220,8 +209,8 @@ def create_pipeline(
   components.append(evaluator)
     
   pusher_args = {
-      'model':
-          trainer.outputs['model'],
+      'model': trainer.outputs['model'],
+      'model_blessing': evaluator.outputs['blessing'],
       'push_destination':
           pusher_pb2.PushDestination(
               filesystem=pusher_pb2.PushDestination.Filesystem(
@@ -231,9 +220,9 @@ def create_pipeline(
     pusher_args.update({
         'custom_executor_spec':
             executor_spec.ExecutorClassSpec(ai_platform_pusher_executor.Executor),
-        # 'custom_config': {
-        #     ai_platform_pusher_executor.SERVING_ARGS_KEY: ai_platform_serving_args
-        # },
+        'custom_config': {
+            tfx.extensions.google_cloud_ai_platform.SERVING_ARGS_KEY: ai_platform_serving_args
+        },
     })
   pusher = Pusher(**pusher_args)
   components.append(pusher)
@@ -244,7 +233,7 @@ def create_pipeline(
       components=components,
       # Change this value to control caching of execution results. Default value
       # is `False`.
-      # enable_cache=True,
+      enable_cache=True,
       metadata_connection_config=metadata_connection_config,
       beam_pipeline_args=beam_pipeline_args
   )
