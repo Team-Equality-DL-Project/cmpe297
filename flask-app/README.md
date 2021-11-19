@@ -20,7 +20,7 @@ App available at: ```http://0.0.0.0:80/```
 
 	```gcloud services enable cloudbuild.googleapis.com```
 
-2. Add the project files
+2. Create a project from cloud editor and upload the project files
 
 3. Deploy from root of project
 
