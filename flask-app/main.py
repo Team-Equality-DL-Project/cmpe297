@@ -5,8 +5,10 @@ import json
 import nsvision as nv
 import requests
 import googleapiclient.discovery
+import numpy as np
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/home/ubuntu/cancer-cls-0c0cf7d5ffca.json"
+
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/home/princy_joy/flask-app/secret/alzheimers-331518-fca7b6bc902a.json"
 app = Flask(__name__)
 Bootstrap(app)
 
@@ -54,24 +56,25 @@ def upload_file():
    if request.method == 'POST' and request.files['file'].filename != '':
       
       f = request.files['file'].read()
-      f_open = open('./temp', 'wb')
+      f_open = open('/tmp/img1', 'wb')
       f_open.write(f)
-      image = nv.imread('./temp',resize=(50,50),normalize=True)
+      image = nv.imread('/tmp/img1',resize=(50,50), color_mode='rgb')
       image = nv.expand_dims(image,axis=0)
       data = ""
       try:
-         response = predict_json("cancer-cls", "saved_model", image.tolist())
-         output = response[0]
-         if output['output_0'][0] > output['output_0'][1]:
-            data = "Malignant"
-         else:
-            data = "Benign" 
+         classes ={'MildDemented': 0, 'ModerateDemented': 1, 'NonDemented': 2, 'VeryMildDemented' :3}
+         idc = {k:v for v, k in classes.items()}
          
-         os.remove('./temp')
+         response = predict_json("alzheimers-331518", "kubeflow_pipelines_alzheimers", image.tolist())
+         
+         output = response[0]
+         data = idc[np.argmax(output)] 
+         
+         os.remove('/tmp/img1')
       except Exception as e: 
          print(e)
          print("error")
-         os.remove('./temp')
+         os.remove('/tmp/img1')
          return render_template('uploader.html')
 
       return render_template('uploader.html', value=data)
