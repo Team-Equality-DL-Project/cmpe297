@@ -69,7 +69,7 @@ Our application is live at: https://alzheimers-331518.uc.r.appspot.com/
 | Team members  | Contribution                                       |
 |---------------|----------------------------------------------------|
 | Abhishek Bais |                                                    |
-| Haley Feng    |                                                    |
+| Haley Feng    | Fine-tuning, Model Comparison and Evaluation       |
 | Princy Joy    | TFX pipeline, Flask App, GCP App engine deployment |
 | Shannon Phu   |                                                    |
 
