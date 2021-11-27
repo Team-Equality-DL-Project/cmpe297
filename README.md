@@ -58,7 +58,8 @@ Our application is live at: https://alzheimers-331518.uc.r.appspot.com/
 ### Deliverables
 
 - [Project report](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project%20Report.pdf)
-- [Presentation](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project_Presentation.pdf)
+- [Presentation slides](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project_Presentation.pdf)
+- <TODO: [Video recording]()>
 - [Colabs](https://github.com/Team-Equality-DL-Project/cmpe297/tree/main/notebooks)
 - [TFX pipeline](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/tfx_pipeline.ipynb)
 
