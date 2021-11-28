@@ -71,6 +71,6 @@ Our application is live at: https://alzheimers-331518.uc.r.appspot.com/
 | Abhishek Bais | Implemented SimCLR, SimCLRV2, SimCLRV2 with knowledge distillation, TFX pipeline stages|
 | Haley Feng    | Fine-tuning, Model Comparison and Evaluation                                           |
 | Princy Joy    | TFX pipeline, Flask App, GCP App engine deployment                                     |
-| Shannon Phu   |                                                                                        |
+| Shannon Phu   | GCP MLOps developmen, Kubeflow, GCP AI Platform                                                                                       |
 
 
