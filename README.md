@@ -7,7 +7,7 @@
 - [Project report](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project%20Report.pdf)
 - [Presentation slides](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project_Presentation.pdf)
 - <TODO: [Video recording]()>
-- [Colabs](https://github.com/Team-Equality-DL-Project/cmpe297/tree/main/notebooks)
+- Colabs: [SimCLRv1](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/1.2-simCLR_tune_resnet50_alzheimers_tensorflow.ipynb), [SimCLRv2](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/1.2-simCLR_tune_resnet50_alzheimers_tensorflow.ipynb) (fine-tuned on Alzheimer), [SimCLRv2](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/1.2-simCLR_tune_resnet50_alzheimers_tensorflow.ipynb) (knowledge distillation)
 - [TFX pipeline](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/tfx_pipeline.ipynb)
 
 ### Project overview
