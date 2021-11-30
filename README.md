@@ -2,6 +2,14 @@
 
 ## Alzheimer's - Medical Image Analysis using SimCLR
 
+### Deliverables
+
+- [Project report](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project%20Report.pdf)
+- [Presentation slides](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project_Presentation.pdf)
+- <TODO: [Video recording]()>
+- [Colabs](https://github.com/Team-Equality-DL-Project/cmpe297/tree/main/notebooks)
+- [TFX pipeline](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/tfx_pipeline.ipynb)
+
 ### Project overview
 Alzheimer's disease is a neurodegenerative disease primarily affecting middle-aged and elderly people. Medical imaging techniques are vastly used for primary diagnosis and a lot of computer aided algorithms assist physicians in analysing the brain images. Deep learning based techniques are becoming increasingly adopted in the medical field for detection and study of diseases. The challenging part of creating deep learning models is the lack of high quality labelled dataset. Such conditions are ideally suited for self-supervised or semi-supervised deep learning. In this project we used the self-supervised learning, **SimCLR** (A Simple Framework for Contrastive Learning of Visual Representations) as well as the semi-supervised learning, **SimCLRv2** and **Teacher-Student Knowledge Distillation** to classify Alzheimer's MRI images into four classes based on severity. 
 
@@ -54,14 +62,6 @@ From the ROC-AUC curves comparison, we observed that SimCLRv1 performed the best
 Our application is live at: https://alzheimers-331518.uc.r.appspot.com/
 
 ![image](https://user-images.githubusercontent.com/70080503/143667394-b53c3797-74db-4027-87e3-92636f155e90.png)
-
-### Deliverables
-
-- [Project report](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project%20Report.pdf)
-- [Presentation slides](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/docs/CMPE297_Project_Presentation.pdf)
-- <TODO: [Video recording]()>
-- [Colabs](https://github.com/Team-Equality-DL-Project/cmpe297/tree/main/notebooks)
-- [TFX pipeline](https://github.com/Team-Equality-DL-Project/cmpe297/blob/main/notebooks/tfx_pipeline.ipynb)
 
 
 ### Team Equality members
